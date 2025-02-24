@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet";
 
 import { faMailBulk } from "@fortawesome/free-solid-svg-icons";
@@ -27,10 +27,124 @@ const Homepage = () => {
 	const [stayLogo, setStayLogo] = useState(false);
 	const [logoSize, setLogoSize] = useState(80);
 	const [oldLogoSize, setOldLogoSize] = useState(80);
+	
+	// Cursor following dot states
+	const canvasRef = useRef(null);
+	const mouseRef = useRef({ x: 0, y: 0 });
+	const dotsRef = useRef([]);
+	const requestRef = useRef();
+	const [isHovering, setIsHovering] = useState(false);
 
 	useEffect(() => {
 		window.scrollTo(0, 0);
 	}, []);
+
+	// Initialize canvas for cursor effect
+	useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+
+		const handleResize = () => {
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+		};
+
+		handleResize();
+		window.addEventListener('resize', handleResize);
+
+		// Initialize dots
+		const dotCount = 12; // Number of dots in the trail
+		const dots = [];
+		
+		for (let i = 0; i < dotCount; i++) {
+			dots.push({
+				x: 0,
+				y: 0,
+				size: 8 - (i * 0.5), // Progressively smaller dots
+				color: `rgba(88, 101, 242, ${1 - i * 0.08})` // Fading opacity
+			});
+		}
+		
+		dotsRef.current = dots;
+
+		return () => {
+			window.removeEventListener('resize', handleResize);
+		};
+	}, []);
+
+	// Handle mouse movement
+	useEffect(() => {
+		const handleMouseMove = (e) => {
+			mouseRef.current = { x: e.clientX, y: e.clientY };
+		};
+
+		// Handle hover states
+		const handleInteractiveElements = () => {
+			const interactiveElements = document.querySelectorAll('a, button, .homepage-social-icon, .logo');
+			
+			interactiveElements.forEach(el => {
+				el.addEventListener('mouseenter', () => setIsHovering(true));
+				el.addEventListener('mouseleave', () => setIsHovering(false));
+			});
+		};
+
+		window.addEventListener('mousemove', handleMouseMove);
+		// Set up after a small delay to ensure all elements are mounted
+		setTimeout(handleInteractiveElements, 500);
+
+		return () => {
+			window.removeEventListener('mousemove', handleMouseMove);
+			const interactiveElements = document.querySelectorAll('a, button, .homepage-social-icon, .logo');
+			interactiveElements.forEach(el => {
+				el.removeEventListener('mouseenter', () => {});
+				el.removeEventListener('mouseleave', () => {});
+			});
+		};
+	}, []);
+
+	// Animation loop for following dots
+	useEffect(() => {
+		if (!canvasRef.current) return;
+		
+		const ctx = canvasRef.current.getContext('2d');
+		
+		const animate = () => {
+			ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+			
+			const dots = dotsRef.current;
+			
+			// Each dot follows the previous one with a delay
+			for (let i = dots.length - 1; i >= 0; i--) {
+				if (i === 0) {
+					// First dot follows the mouse with easing
+					dots[i].x += (mouseRef.current.x - dots[i].x) * 0.3;
+					dots[i].y += (mouseRef.current.y - dots[i].y) * 0.3;
+				} else {
+					// Other dots follow the previous dot
+					dots[i].x += (dots[i-1].x - dots[i].x) * 0.3;
+					dots[i].y += (dots[i-1].y - dots[i].y) * 0.3;
+				}
+				
+				// Draw the dot
+				ctx.beginPath();
+				
+				// If hovering over interactive element, make dots expand
+				const size = isHovering ? dots[i].size * 1.5 : dots[i].size;
+				
+				ctx.arc(dots[i].x, dots[i].y, size, 0, Math.PI * 2);
+				ctx.fillStyle = dots[i].color;
+				ctx.fill();
+			}
+			
+			requestRef.current = requestAnimationFrame(animate);
+		};
+		
+		requestRef.current = requestAnimationFrame(animate);
+		
+		return () => {
+			cancelAnimationFrame(requestRef.current);
+		};
+	}, [isHovering]);
 
 	useEffect(() => {
 		const handleScroll = () => {
@@ -77,13 +191,35 @@ const Homepage = () => {
 					name="keywords"
 					content={currentSEO.keywords.join(", ")}
 				/>
+				<style>
+					{`
+						body {
+							cursor: none;
+						}
+						a, button, .homepage-social-icon, .logo {
+							cursor: none;
+						}
+					`}
+				</style>
 			</Helmet>
+
+			{/* Canvas for cursor effect */}
+			<canvas 
+				ref={canvasRef} 
+				style={{
+					position: 'fixed',
+					top: 0,
+					left: 0,
+					pointerEvents: 'none',
+					zIndex: 9999
+				}}
+			/>
 
 			<div className="page-content">
 				<NavBar active="home" />
 				<div className="content-wrapper">
 					<div className="homepage-logo-container">
-						<div style={logoStyle}>
+						<div style={logoStyle} className="logo">
 							<Logo width={logoSize} link={false} />
 						</div>
 					</div>
