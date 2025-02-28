@@ -26,6 +26,25 @@
 
   <!-- Main CSS File -->
   <link href="assets/css/main.css" rel="stylesheet">
+  <style>
+    .pointer {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #ff0080;
+      border-radius: 50%;
+      pointer-events: none;
+      transition: transform 0.05s linear;
+  }
+  .trail-effect {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: rgba(255, 0, 128, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+  }
+  </style>
   
 
   <!-- =======================================================
@@ -35,6 +54,81 @@
   * Author: BootstrapMade.com
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
+
+<style>
+  .pointer {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #ff0080;
+      border-radius: 50%;
+      pointer-events: none;
+      transition: transform 0.05s linear;
+      z-index: 9999;
+  }
+  .trail-effect {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background-color: rgba(255, 0, 128, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+  }
+</style>
+
+<style>
+  body {
+      cursor: none; /* Hide default cursor */
+  }
+  .pointer {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      background-color: #ff0080;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+  }
+  .trail-effect {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      background-color: rgba(255, 0, 128, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+  }
+</style>
+
+<style>
+  body {
+      cursor: none; /* Hide default cursor */
+  }
+  .pointer {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      background-color: #ff0080;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease-out; /* Smoother movement */
+  }
+  .trail-effect {
+      position: fixed;
+      width: 12px;
+      height: 12px;
+      background-color: rgba(255, 0, 128, 0.3);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+  }
+</style>
 </head>
 
 <body class="index-page">
@@ -961,7 +1055,132 @@
 
   <!-- Main JS File -->
   <script src="assets/js/main.js"></script>
+  <div class="pointer" id="pointer"></div>
+  <script>
+      const pointer = document.getElementById('pointer');
+      const trails = [];
+      
+      document.addEventListener('mousemove', (e) => {
+          requestAnimationFrame(() => {
+              pointer.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+              
+              const trail = document.createElement('div');
+              trail.classList.add('trail-effect');
+              document.body.appendChild(trail);
+              trail.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+              
+              trails.push(trail);
+              setTimeout(() => {
+                  trail.style.opacity = '0';
+                  setTimeout(() => {
+                      document.body.removeChild(trail);
+                      trails.shift();
+                  }, 500);
+              }, 100);
+          });
+      });
+  </script>
 
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const pointer = document.createElement('div');
+      pointer.classList.add('pointer');
+      document.body.appendChild(pointer);
+      
+      const trails = [];
+
+      document.addEventListener('mousemove', (e) => {
+          requestAnimationFrame(() => {
+              pointer.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+
+              const trail = document.createElement('div');
+              trail.classList.add('trail-effect');
+              document.body.appendChild(trail);
+              trail.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+
+              trails.push(trail);
+              setTimeout(() => {
+                  trail.style.opacity = '0';
+                  setTimeout(() => {
+                      document.body.removeChild(trail);
+                      trails.shift();
+                  }, 500);
+              }, 100);
+          });
+      });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const pointer = document.createElement('div');
+      pointer.classList.add('pointer');
+      document.body.appendChild(pointer);
+      
+      const trails = [];
+
+      document.addEventListener('mousemove', (e) => {
+          requestAnimationFrame(() => {
+              pointer.style.left = `${e.clientX}px`;
+              pointer.style.top = `${e.clientY}px`;
+
+              const trail = document.createElement('div');
+              trail.classList.add('trail-effect');
+              document.body.appendChild(trail);
+              trail.style.left = `${e.clientX}px`;
+              trail.style.top = `${e.clientY}px`;
+
+              trails.push(trail);
+              setTimeout(() => {
+                  trail.style.opacity = '0';
+                  setTimeout(() => {
+                      if (document.body.contains(trail)) {
+                          document.body.removeChild(trail);
+                      }
+                      trails.shift();
+                  }, 500);
+              }, 100);
+          });
+      });
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+      const pointer = document.createElement('div');
+      pointer.classList.add('pointer');
+      document.body.appendChild(pointer);
+      
+      const trails = [];
+      const maxTrails = 5; // Limit the number of trailing dots
+
+      document.addEventListener('mousemove', (e) => {
+          requestAnimationFrame(() => {
+              pointer.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+
+              if (trails.length < maxTrails) {
+                  const trail = document.createElement('div');
+                  trail.classList.add('trail-effect');
+                  document.body.appendChild(trail);
+                  trail.style.left = `${e.clientX}px`;
+                  trail.style.top = `${e.clientY}px`;
+
+                  trails.push(trail);
+                  setTimeout(() => {
+                      trail.style.opacity = '0';
+                      setTimeout(() => {
+                          if (document.body.contains(trail)) {
+                              document.body.removeChild(trail);
+                          }
+                          trails.shift();
+                      }, 400); // Faster disappearance
+                  }, 200);
+              }
+          });
+      });
+  });
+</script>
 </body>
 
 </html>
